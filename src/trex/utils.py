@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 from typing import List
 
-from ..molecule import Molecule
+from .molecule import Molecule
 
 
 class NiceFormatter(logging.Formatter):
