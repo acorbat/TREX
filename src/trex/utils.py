@@ -34,6 +34,12 @@ def molecule_list_2_df(mol_list: List[Molecule]) -> pd.DataFrame:
 
 def df_2_molecule_list(df: pd.DataFrame) -> List[Molecule]:
     """Cast pandas DataFrame to list of Molecules"""
-    return [Molecule(umi=mol.umi, cell_id=mol.cell_id, clone_id=mol.barcode,
+    molecules = [Molecule(umi=mol.umi, cell_id=mol.cell_id, clone_id=mol.barcode,
                      read_count=mol.get('read_count', -1)
                      ) for r, mol in df.iterrows()]
+
+    sorted_molecules = sorted(
+        molecules, key=lambda mol: (mol.cell_id, mol.clone_id, mol.umi)
+    )
+
+    return sorted_molecules
