@@ -123,6 +123,12 @@ def add_common_arguments(parser, smartseq: bool):
     filter_group = parser.add_argument_group("Filter settings")
 
     filter_group.add_argument(
+        "--per-cell",
+        help="Perform Hamming distance correction per cell. Default: False",
+        default=False,
+        action="store_true"
+    )
+    filter_group.add_argument(
         "--min-length",
         "-m",
         help="Minimum number of nucleotides a cloneID must have. Default: %(default)s",

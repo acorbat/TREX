@@ -25,7 +25,8 @@ from ..writers import (
     write_loom,
 )
 from ..clone import CloneGraph
-from ..molecule import Molecule, compute_molecules, correct_clone_ids
+from ..molecule import Molecule, compute_molecules, correct_clone_ids, \
+    correct_barcodes_per_cell
 from ..cell import Cell, compute_cells
 from ..error import TrexError
 from ..dataset import DatasetReader
@@ -94,6 +95,7 @@ def main(args):
             amplicon_inputs=amplicon_inputs,
             sample_names=sample_names,
             prefix=args.prefix,
+            per_cell_correction=args.per_cell_correction,
             max_hamming=args.max_hamming,
             min_length=args.min_length,
             jaccard_threshold=args.jaccard_threshold,
@@ -152,6 +154,7 @@ def run_trex(
     amplicon_inputs: List[Path],
     sample_names: List[str],
     prefix: bool,
+    per_cell_correction: bool,
     max_hamming: int,
     min_length: int,
     jaccard_threshold: float,
@@ -195,7 +198,12 @@ def run_trex(
 
     write_reads_or_molecules(output_dir / "molecules.txt", molecules, sort=False)
 
-    corrected_molecules = correct_clone_ids(molecules, max_hamming, min_length)
+    if per_cell_correction:
+        corrected_molecules = correct_barcodes_per_cell(molecules, max_hamming,
+                                                        min_length)
+    else:
+        corrected_molecules = correct_clone_ids(molecules, max_hamming,
+                                                min_length)
     clone_ids = [
         m.clone_id
         for m in corrected_molecules
