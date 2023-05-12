@@ -87,6 +87,22 @@ def compute_consensus(sequences):
     return "".join(letters[bin_consens])
 
 
+def remove_odd_barcodes(molecules: List[Molecule],
+                        min_bases_detected: int = 7) -> List[Molecule]:
+    """Discard barcodes with a less than min_bases_detected or a
+    single (repeated) base detected."""
+    def acceptable_barcode(barcode):
+        detected_barcode = re.sub("[-0]", "", barcode)
+        if len(detected_barcode) <= min_bases_detected or len(set(detected_barcode)) <= 1:
+            return False
+        else:
+            return True
+
+    new_molecules = [mol for mol in molecules if acceptable_barcode(
+        mol.clone_id)]
+    return new_molecules
+
+
 def correct_clone_ids(
     molecules: List[Molecule], max_hamming: int, min_overlap: int = 20
 ) -> List[Molecule]:

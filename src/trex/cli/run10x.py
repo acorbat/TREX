@@ -26,7 +26,7 @@ from ..writers import (
 )
 from ..clone import CloneGraph
 from ..molecule import Molecule, compute_molecules, correct_clone_ids, \
-    correct_barcodes_per_cell
+    correct_barcodes_per_cell, remove_odd_barcodes
 from ..cell import Cell, compute_cells
 from ..error import TrexError
 from ..dataset import DatasetReader
@@ -95,6 +95,7 @@ def main(args):
             amplicon_inputs=amplicon_inputs,
             sample_names=sample_names,
             prefix=args.prefix,
+            min_bases_detected=args.min_bases_detected,
             per_cell_correction=args.per_cell_correction,
             max_hamming=args.max_hamming,
             min_length=args.min_length,
@@ -154,6 +155,7 @@ def run_trex(
     amplicon_inputs: List[Path],
     sample_names: List[str],
     prefix: bool,
+    min_bases_detected: int,
     per_cell_correction: bool,
     max_hamming: int,
     min_length: int,
@@ -196,7 +198,10 @@ def run_trex(
         f"{len(set(clone_ids))} unique)"
     )
 
-    write_reads_or_molecules(output_dir / "molecules.txt", molecules, sort=False)
+    molecules = remove_odd_barcodes(molecules, min_bases_detected)
+
+    write_reads_or_molecules(output_dir / "molecules.txt", molecules,
+                             sort=False)
 
     if per_cell_correction:
         corrected_molecules = correct_barcodes_per_cell(molecules, max_hamming,
@@ -238,7 +243,8 @@ def run_trex(
 
     with open(output_dir / "components.txt", "w") as components_file:
         print(
-            clone_graph.components_txt(highlight_cell_ids), file=components_file, end=""
+            clone_graph.components_txt(highlight_cell_ids),
+            file=components_file, end=""
         )
     if should_plot:
         logger.info("Plotting clone graph")
@@ -249,7 +255,8 @@ def run_trex(
     clone_graph.remove_edges(bridges)
     with open(output_dir / "components_corrected.txt", "w") as components_file:
         print(
-            clone_graph.components_txt(highlight_cell_ids), file=components_file, end=""
+            clone_graph.components_txt(highlight_cell_ids),
+            file=components_file, end=""
         )
 
     if should_plot:
