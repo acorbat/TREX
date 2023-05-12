@@ -96,7 +96,7 @@ def main(args):
             sample_names=sample_names,
             prefix=args.prefix,
             min_bases_detected=args.min_bases_detected,
-            per_cell_correction=args.per_cell_correction,
+            per_cell_correction=args.per_cell,
             max_hamming=args.max_hamming,
             min_length=args.min_length,
             jaccard_threshold=args.jaccard_threshold,
