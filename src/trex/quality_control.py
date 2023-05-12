@@ -25,9 +25,9 @@ def read_quality(reads: pd.DataFrame) -> plt.Axes:
     plt.xlabel('Number of reads')
     plt.title('Number of reads per molecule')
 
-    txt = 'This plot shows how many times a molecule has been read. ' \
-          'The more the better'
-    plt.text(-1, 0.1, txt)
+    txt = 'This plot shows how many times a molecule has been read. \n' \
+          'The more reads per molecule, the better.'
+    plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
     return ax
 
 
@@ -43,5 +43,5 @@ def length_read(molecules: pd.DataFrame) -> plt.Axes:
     txt = 'This plot shows how many bases have been read per molecule. \n' \
           'Ideally all 30 bases have been read. If very few bases are read, \n'\
           'we can not be sure how to complete the missing bases.'
-    plt.text(-1, 0.1, txt)
+    plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
     return ax
