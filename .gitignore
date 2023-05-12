@@ -5,4 +5,5 @@ trex_run/
 __pycache__/
 .snakemake/
 pip-wheel-metadata/
+.idea/
 src/trex/_version.py
