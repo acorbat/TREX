@@ -60,3 +60,31 @@ def molecules_per_cell(molecules: pd.DataFrame) -> plt.Axes:
     plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
     return ax
 
+
+def molecules_per_barcode(molecules: pd.DataFrame) -> plt.Axes:
+    """Plot histogram of how many molecules were detected per viral barcode."""
+    count_reads = molecules.groupby(['clone_id']).umi.agg('count')
+
+    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    plt.xlabel('Molecules per barcode')
+    plt.title('Number of molecules')
+    txt = 'This plot shows how many molecules were found per barcode. \n' \
+          'Barcodes that appear a few times might not be found in more \n' \
+          'cells. Barcodes that have too many might be result of \n' \
+          'contamination or alignment problems or big clones.'
+    plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+    return ax
+
+
+def unique_barcodes_per_cell(molecules: pd.DataFrame) -> plt.Axes:
+    """Plot histogram of how many unique barcodes were detected per cell."""
+    count_reads = molecules.groupby('#cell_id').clone_id.unique().apply(len)
+
+    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    plt.xlabel('Unique barcodes per cell')
+    plt.title('Number of unique barcodes')
+    txt = 'This plot shows how many unique barcodes were detected per cell.\n' \
+          'Cells with many unique barcodes show either lots of infection \n' \
+          'events or possible unfiltered doublets.'
+    plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+    return ax
