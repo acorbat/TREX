@@ -45,3 +45,18 @@ def length_read(molecules: pd.DataFrame) -> plt.Axes:
           'we can not be sure how to complete the missing bases.'
     plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
     return ax
+
+
+def molecules_per_cell(molecules: pd.DataFrame) -> plt.Axes:
+    """Plot histogram of how many molecules were detected per cell."""
+    count_reads = molecules.groupby(['#cell_id']).umi.agg('count')
+
+    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    plt.xlabel('Molecules per cell')
+    plt.title('Number of molecules')
+    txt = 'This plot shows how many molecules were found per cell. \n' \
+          'Cell that have a single molecule might be filtered out later. \n' \
+          'Cells that have too many might be result of non-removed \n doublets.'
+    plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+    return ax
+
