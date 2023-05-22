@@ -1,8 +1,11 @@
+from itertools import combinations
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pathlib
 import re
 import seaborn as sns
+from tinyalign import hamming_distance
 
 
 def load_reads(data_dir: pathlib.Path):
@@ -12,8 +15,14 @@ def load_reads(data_dir: pathlib.Path):
 
 
 def load_molecules(data_dir: pathlib.Path):
-    """Loads saved reads into a DataFrame."""
+    """Loads saved molecules before correcting into a DataFrame."""
     MOLS_DIR = data_dir / 'molecules.txt'
+    return pd.read_csv(MOLS_DIR, delimiter='\t')
+
+
+def load_molecules_corrected(data_dir: pathlib.Path):
+    """Loads saved molecules after correcting into a DataFrame."""
+    MOLS_DIR = data_dir / 'molecules_corrected.txt'
     return pd.read_csv(MOLS_DIR, delimiter='\t')
 
 
@@ -87,4 +96,47 @@ def unique_barcodes_per_cell(molecules: pd.DataFrame) -> plt.Axes:
           'Cells with many unique barcodes show either lots of infection \n' \
           'events or possible unfiltered doublets.'
     plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+    return ax
+
+
+def hamming_distance_histogram(molecules: pd.DataFrame,
+                               ignore_incomplete=True) -> plt.Axes:
+    """Plot histogram of Hamming distance between barcodes. ignore_incomplete is
+     set to True by default and it removes incomplete barcodes."""
+    if ignore_incomplete:
+        molecules = molecules[~molecules.clone_id.str.contains('-|0')]
+    this_clone_ids = molecules.clone_id.unique()
+    hamming_distances = np.empty([len(this_clone_ids)] * 2)
+
+    def my_iter(barcode_list):
+        for inds in combinations(np.arange(len(barcode_list)), 2):
+            yield inds, barcode_list[inds[0]], barcode_list[inds[1]]
+
+    # Hamming distance function
+    def is_similar(args):
+        inds, s, t = args
+        if not ignore_incomplete:
+            bad_chars = {'-', '0'}
+            if bad_chars & set(s) or bad_chars & set(t):
+                # Remove suffix and/or prefix where sequences do not overlap
+                s = s.lstrip("-0")
+                t = t[-len(s):]
+                t = t.lstrip("-0")
+                s = s[-len(t):]
+                s = s.rstrip("-0")
+                t = t[: len(s)]
+                t = t.rstrip("-0")
+                s = s[: len(t)]
+
+        return inds, hamming_distance(s, t)
+
+    for ind, val in map(is_similar, my_iter(this_clone_ids)):
+        hamming_distances[ind[0], ind[1]] = val
+
+    vals = hamming_distances[np.triu_indices_from(hamming_distances, 1)]
+    ax = sns.histplot(vals, discrete=True, log=True)
+
+    ax.set_title('Hamming Distance Histogram')
+    ax.set_xlabel('Hamming Distance')
+
     return ax
