@@ -1,6 +1,7 @@
 from itertools import combinations
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import pathlib
 import re
@@ -24,6 +25,12 @@ def load_molecules_corrected(data_dir: pathlib.Path):
     """Loads saved molecules after correcting into a DataFrame."""
     MOLS_DIR = data_dir / 'molecules_corrected.txt'
     return pd.read_csv(MOLS_DIR, delimiter='\t')
+
+
+def load_umi_count_matrix(data_dir: pathlib.Path):
+    """Loads saved UMI count matrix into a DataFrame."""
+    UMI_DIR = data_dir / 'umi_count_matrix.csv'
+    return pd.read_csv(UMI_DIR)
 
 
 def read_quality(reads: pd.DataFrame) -> plt.Axes:
@@ -138,5 +145,77 @@ def hamming_distance_histogram(molecules: pd.DataFrame,
 
     ax.set_title('Hamming Distance Histogram')
     ax.set_xlabel('Hamming Distance')
+
+    return ax
+
+
+def jaccard(cell_1: npt.ArrayLike, cell_2: npt.ArrayLike) -> float:
+    """Estimates the Jaccard similarity between two boolean vectors taken from
+    the UMI count matrix."""
+    return sum(np.logical_and(cell_1, cell_2)) / sum(np.logical_or(cell_1,
+                                                                   cell_2))
+
+
+def jaccard_similarity_matrix(umi_count: pd.DataFrame) -> npt.ArrayLike:
+    """Builds Jaccard similarity matrix from the UMI count matrix loaded as
+    pandas DataFrame.
+
+    Note: columns are cell IDs and first column is disregarded as it usually has
+    the index to barcodes"""
+    this_cell_ids = umi_count.columns[1:]
+    jaccard_matrix = np.empty([len(this_cell_ids)] * 2)
+
+    # Iterator over combinations of cells
+    def my_iter(cell_id_list):
+        for inds in combinations(np.arange(len(cell_id_list)), 2):
+            clones_cell_1 = umi_count[cell_id_list[inds[0]]].values > 0
+            clones_cell_2 = umi_count[cell_id_list[inds[1]]].values > 0
+            yield inds, clones_cell_1, clones_cell_2
+
+    def my_jaccard(args):
+        inds, clones_cell_1, clones_cell_2 = args
+        return inds, jaccard(clones_cell_1, clones_cell_2)
+
+    for ind, val in map(my_jaccard, my_iter(this_cell_ids)):
+        jaccard_matrix[ind[0], ind[1]] = val
+
+    return jaccard_matrix
+
+
+def jaccard_histogram(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
+    """Plots the Jaccard similarity histogram between cells."""
+    vals = jaccard_matrix[np.triu_indices_from(jaccard_matrix, 1)]
+    ax = sns.histplot(vals, log=True)
+
+    ax.set_title('Jaccard Similarity between cells Histogram')
+    ax.set_xlabel('Jaccard Similarity')
+
+    return ax
+
+
+def plot_jaccard_matrix(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
+    """Orders with reverse Cuthill-McKee algorithm the cells in the Jaccard
+     Similarity matrix and plots it for visualization."""
+    from scipy.sparse import csr_matrix
+    from scipy.sparse.csgraph import reverse_cuthill_mckee
+
+    diag_jaccard_matrix = jaccard_matrix.copy()
+    diag_jaccard_matrix = diag_jaccard_matrix + diag_jaccard_matrix.T
+    diag_jaccard_matrix[np.diag_indices_from(diag_jaccard_matrix)] = 1
+
+    graph = csr_matrix(diag_jaccard_matrix)
+    swaps = reverse_cuthill_mckee(graph, symmetric_mode=True)
+
+    diag_jaccard_matrix = diag_jaccard_matrix[swaps]
+    diag_jaccard_matrix = diag_jaccard_matrix[:, swaps]
+
+    plt.figure(figsize=(11, 10))
+    ax = plt.imshow(diag_jaccard_matrix, interpolation='none', cmap='Blues',
+                    rasterized=True)
+    plt.xticks([])
+    plt.yticks([])
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
+    plt.colorbar()
 
     return ax
