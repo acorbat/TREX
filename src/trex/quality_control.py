@@ -9,22 +9,44 @@ import seaborn as sns
 from tinyalign import hamming_distance
 
 
-def load_reads(data_dir: pathlib.Path):
+def load_reads(data_dir: pathlib.Path) -> pd.DataFrame:
     """Loads saved reads into a DataFrame"""
     READ_DIR = data_dir / 'reads.txt'
     return pd.read_csv(READ_DIR, delimiter='\t')
 
 
-def load_molecules(data_dir: pathlib.Path):
+def load_molecules(data_dir: pathlib.Path) -> pd.DataFrame:
     """Loads saved molecules before correcting into a DataFrame."""
     MOLS_DIR = data_dir / 'molecules.txt'
     return pd.read_csv(MOLS_DIR, delimiter='\t')
 
 
-def load_molecules_corrected(data_dir: pathlib.Path):
+def load_molecules_corrected(data_dir: pathlib.Path) -> pd.DataFrame:
     """Loads saved molecules after correcting into a DataFrame."""
     MOLS_DIR = data_dir / 'molecules_corrected.txt'
     return pd.read_csv(MOLS_DIR, delimiter='\t')
+
+
+def laod_cells(data_dir: pathlib.Path,
+               filtered: bool = True) -> pd.DataFrame:
+    cells_df = []
+
+    filename = 'cells_filtered.txt' if filtered else 'cells.txt'
+
+    with open(data_dir / filename) as file:
+        next(file)
+        while line := file.readline():
+            cell_id, barcode_info = line[:-1].split('\t:\t')
+            barcode_info = barcode_info.split('\t')
+
+            barcodes_df = {'barcodes': barcode_info[::2],
+                           'count': barcode_info[1::2]}
+            barcodes_df = pd.DataFrame(barcodes_df,
+                                       index=np.arange(len(barcode_info[::2])))
+            barcodes_df['cell_id'] = cell_id
+            cells_df.append(barcodes_df)
+
+    return pd.concat(cells_df, ignore_index=True)
 
 
 def load_umi_count_matrix(data_dir: pathlib.Path):
