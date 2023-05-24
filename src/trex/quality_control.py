@@ -34,11 +34,13 @@ def load_umi_count_matrix(data_dir: pathlib.Path):
 
 
 def read_quality(reads: pd.DataFrame,
-                 add_description : bool = True) -> plt.Axes:
+                 ax: plt.Axes = None,
+                 add_description: bool = True) -> plt.Axes:
     """Plot histogram of how many time a molecule was read."""
     count_reads = reads.groupby(['#cell_id', 'umi']).agg('count')
 
-    ax = sns.histplot(data=count_reads, x='clone_id', discrete=True, log=True)
+    ax = sns.histplot(data=count_reads, x='clone_id', discrete=True, log=True,
+                      ax=ax)
     plt.xlabel('Number of reads')
     plt.title('Number of reads per molecule')
 
@@ -50,13 +52,14 @@ def read_quality(reads: pd.DataFrame,
 
 
 def length_read(molecules: pd.DataFrame,
+                ax: plt.Axes = None,
                 add_description : bool = True) -> plt.Axes:
     """Plot histogram of how many bases were adequately read per barcode."""
     molecules['stripped_barcode'] = molecules.clone_id.apply(
         lambda x: re.sub("[-0]", "", x))
 
     ax = sns.histplot(molecules.stripped_barcode.apply(len), discrete=True,
-                      log=True)
+                      log=True, ax=ax)
     plt.xlabel('Number of detected bases')
     plt.title('Length of computed molecules')
 
@@ -69,11 +72,12 @@ def length_read(molecules: pd.DataFrame,
 
 
 def molecules_per_cell(molecules: pd.DataFrame,
+                       ax: plt.Axes = None,
                        add_description : bool = True) -> plt.Axes:
     """Plot histogram of how many molecules were detected per cell."""
     count_reads = molecules.groupby(['#cell_id']).umi.agg('count')
 
-    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    ax = sns.histplot(count_reads.values, discrete=True, log=True, ax=ax)
     plt.xlabel('Molecules per cell')
     plt.title('Number of molecules')
 
@@ -86,11 +90,12 @@ def molecules_per_cell(molecules: pd.DataFrame,
 
 
 def molecules_per_barcode(molecules: pd.DataFrame,
+                          ax: plt.Axes = None,
                           add_description : bool = True) -> plt.Axes:
     """Plot histogram of how many molecules were detected per viral barcode."""
     count_reads = molecules.groupby(['clone_id']).umi.agg('count')
 
-    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    ax = sns.histplot(count_reads.values, discrete=True, log=True, ax=ax)
     plt.xlabel('Molecules per barcode')
     plt.title('Number of molecules')
 
@@ -104,11 +109,12 @@ def molecules_per_barcode(molecules: pd.DataFrame,
 
 
 def unique_barcodes_per_cell(molecules: pd.DataFrame,
+                             ax: plt.Axes = None,
                              add_description : bool = True) -> plt.Axes:
     """Plot histogram of how many unique barcodes were detected per cell."""
     count_reads = molecules.groupby('#cell_id').clone_id.unique().apply(len)
 
-    ax = sns.histplot(count_reads.values, discrete=True, log=True)
+    ax = sns.histplot(count_reads.values, discrete=True, log=True, ax=ax)
     plt.xlabel('Unique barcodes per cell')
     plt.title('Number of unique barcodes')
 
@@ -121,6 +127,7 @@ def unique_barcodes_per_cell(molecules: pd.DataFrame,
 
 
 def hamming_distance_histogram(molecules: pd.DataFrame,
+                               ax: plt.Axes = None,
                                ignore_incomplete: bool = True) -> plt.Axes:
     """Plot histogram of Hamming distance between barcodes. ignore_incomplete is
      set to True by default and it removes incomplete barcodes."""
@@ -155,7 +162,7 @@ def hamming_distance_histogram(molecules: pd.DataFrame,
         hamming_distances[ind[0], ind[1]] = val
 
     vals = hamming_distances[np.triu_indices_from(hamming_distances, 1)]
-    ax = sns.histplot(vals, discrete=True, log=True)
+    ax = sns.histplot(vals, discrete=True, log=True, ax=ax)
 
     ax.set_title('Hamming Distance Histogram')
     ax.set_xlabel('Hamming Distance')
@@ -196,10 +203,11 @@ def jaccard_similarity_matrix(umi_count: pd.DataFrame) -> npt.ArrayLike:
     return jaccard_matrix
 
 
-def jaccard_histogram(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
+def jaccard_histogram(jaccard_matrix: npt.ArrayLike,
+                      ax: plt.Axes = None) -> plt.Axes:
     """Plots the Jaccard similarity histogram between cells."""
     vals = jaccard_matrix[np.triu_indices_from(jaccard_matrix, 1)]
-    ax = sns.histplot(vals, log=True)
+    ax = sns.histplot(vals, log=True, ax=ax)
 
     ax.set_title('Jaccard Similarity between cells Histogram')
     ax.set_xlabel('Jaccard Similarity')
@@ -207,7 +215,8 @@ def jaccard_histogram(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
     return ax
 
 
-def plot_jaccard_matrix(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
+def plot_jaccard_matrix(jaccard_matrix: npt.ArrayLike,
+                        ax: plt.Axes = None) -> plt.Axes:
     """Orders with reverse Cuthill-McKee algorithm the cells in the Jaccard
      Similarity matrix and plots it for visualization."""
     from scipy.sparse import csr_matrix
@@ -223,13 +232,15 @@ def plot_jaccard_matrix(jaccard_matrix: npt.ArrayLike) -> plt.Axes:
     diag_jaccard_matrix = diag_jaccard_matrix[swaps]
     diag_jaccard_matrix = diag_jaccard_matrix[:, swaps]
 
-    plt.figure(figsize=(11, 10))
-    ax = plt.imshow(diag_jaccard_matrix, interpolation='none', cmap='Blues',
-                    rasterized=True)
-    plt.xticks([])
-    plt.yticks([])
-    plt.ylabel('Cell ID')
-    plt.xlabel('Cell ID')
-    plt.colorbar()
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(11, 10))
+    im = ax.imshow(diag_jaccard_matrix, interpolation='none', cmap='Blues',
+                   rasterized=True)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_ylabel('Cell ID')
+    ax.set_xlabel('Cell ID')
+    plt.colorbar(im, ax=ax)
 
     return ax
