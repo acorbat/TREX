@@ -27,7 +27,7 @@ def load_molecules_corrected(data_dir: pathlib.Path) -> pd.DataFrame:
     return pd.read_csv(MOLS_DIR, delimiter='\t')
 
 
-def laod_cells(data_dir: pathlib.Path,
+def load_cells(data_dir: pathlib.Path,
                filtered: bool = True) -> pd.DataFrame:
     cells_df = []
 
