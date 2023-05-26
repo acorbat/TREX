@@ -58,7 +58,7 @@ def load_umi_count_matrix(data_dir: pathlib.Path):
 def read_quality(reads: pd.DataFrame,
                  ax: plt.Axes = None,
                  add_description: bool = True) -> plt.Axes:
-    """Plot histogram of how many time a molecule was read."""
+    """Plot histogram of how many times a molecule was read."""
     count_reads = reads.groupby(['#cell_id', 'umi']).agg('count')
 
     ax = sns.histplot(data=count_reads, x='clone_id', discrete=True, log=True,
@@ -75,7 +75,7 @@ def read_quality(reads: pd.DataFrame,
 
 def length_read(molecules: pd.DataFrame,
                 ax: plt.Axes = None,
-                add_description : bool = True) -> plt.Axes:
+                add_description: bool = True) -> plt.Axes:
     """Plot histogram of how many bases were adequately read per barcode."""
     molecules['stripped_barcode'] = molecules.clone_id.apply(
         lambda x: re.sub("[-0]", "", x))
@@ -87,8 +87,8 @@ def length_read(molecules: pd.DataFrame,
 
     if add_description:
         txt = 'This plot shows how many bases have been read per molecule. \n' \
-              'Ideally all 30 bases have been read. If very few bases are read, \n'\
-              'we can not be sure how to complete the missing bases.'
+              'Ideally all 30 bases have been read. If very few bases are ' \
+              'read, \nwe can not be sure how to complete the missing bases.'
         plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
     return ax
 
