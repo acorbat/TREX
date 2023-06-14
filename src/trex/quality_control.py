@@ -39,14 +39,19 @@ def load_cells(data_dir: pathlib.Path,
             cell_id, barcode_info = line[:-1].split('\t:\t')
             barcode_info = barcode_info.split('\t')
 
-            barcodes_df = {'barcodes': barcode_info[::2],
-                           'count': barcode_info[1::2]}
+            barcodes_df = {'barcode': barcode_info[::2],
+                           'counts': barcode_info[1::2]}
             barcodes_df = pd.DataFrame(barcodes_df,
                                        index=np.arange(len(barcode_info[::2])))
             barcodes_df['cell_id'] = cell_id
             cells_df.append(barcodes_df)
 
-    return pd.concat(cells_df, ignore_index=True)
+    cells_df = pd.concat(cells_df, ignore_index=True)
+    cells_df['barcode'] = cells_df.barcode.astype('category')
+    cells_df['counts'] = cells_df.counts.astype(int)
+    cells_df['cell_id'] = cells_df.cell_id.astype('category')
+
+    return cells_df
 
 
 def load_umi_count_matrix(data_dir: pathlib.Path):
@@ -73,6 +78,33 @@ def read_quality(reads: pd.DataFrame,
     return ax
 
 
+def get_length_read(df: pd.DataFrame,
+                    molecules_dataframe: bool = True) -> pd.Series:
+    """Get a pandas Series with the number of nucleotides read per molecule.
+    molecules_dataframe is set to True by default, if a cells DataFrame is being
+    used, then this must be False."""
+    if molecules_dataframe:
+        return df.clone_id.apply(lambda x: len(re.sub("[-0]", "", x)))
+    else:
+        return df.apply(lambda x: [len(
+            re.sub("[-0]", "", x.barcode)), ] * x.counts,
+                        axis=1).explode()
+
+
+def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None, txt=None, ax=None):
+    ax = sns.histplot(series, discrete=True, log=True, ax=ax)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+
+    if txt is not None:
+        plt.sca(ax)
+        plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+
+    return ax
+
+
 def length_read(molecules: pd.DataFrame,
                 ax: plt.Axes = None,
                 add_description: bool = True) -> plt.Axes:
@@ -95,7 +127,7 @@ def length_read(molecules: pd.DataFrame,
 
 def molecules_per_cell(molecules: pd.DataFrame,
                        ax: plt.Axes = None,
-                       add_description : bool = True) -> plt.Axes:
+                       add_description: bool = True) -> plt.Axes:
     """Plot histogram of how many molecules were detected per cell."""
     count_reads = molecules.groupby(['#cell_id']).umi.agg('count')
 
