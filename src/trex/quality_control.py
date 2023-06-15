@@ -91,6 +91,28 @@ def get_length_read(df: pd.DataFrame,
                         axis=1).explode()
 
 
+def get_barcodes_per_cell(df: pd.DataFrame,
+                          molecules_dataframe: bool = True) -> pd.Series:
+    """Get a pandas Series with the number of barcode molecules found per cell.
+    molecules_dataframe is set to True by default, if a cells DataFrame is being
+    used, then this must be False."""
+    if molecules_dataframe:
+        return df.groupby(['#cell_id']).umi.agg('count')
+    else:
+        return df.groupby(['cell_id']).counts.sum()
+
+
+def get_molecules_per_barcodes(df: pd.DataFrame,
+                               molecules_dataframe: bool = True) -> pd.Series:
+    """Get a pandas Series with the number of barcode molecules found per unique
+    barcode. molecules_dataframe is set to True by default, if a cells
+    DataFrame is being used, then this must be False."""
+    if molecules_dataframe:
+        return df.groupby(['clone_id']).umi.agg('count')
+    else:
+        return df.groupby(['barcode']).counts.sum()
+
+
 def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None, txt=None, ax=None):
     ax = sns.histplot(series, discrete=True, log=True, ax=ax)
 
@@ -100,7 +122,8 @@ def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None, txt=No
 
     if txt is not None:
         plt.sca(ax)
-        plt.text(0, -0.3, txt, transform=ax.transAxes, size=12)
+        plt.text(0, -0.2, txt, transform=ax.transAxes, size=12, wrap=True,
+                 ha='left', va='top')
 
     return ax
 
