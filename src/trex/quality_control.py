@@ -113,7 +113,19 @@ def get_molecules_per_barcodes(df: pd.DataFrame,
         return df.groupby(['barcode']).counts.sum()
 
 
-def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None, txt=None, ax=None):
+def get_unique_barcodes_per_cell(df: pd.DataFrame,
+                                 molecules_dataframe: bool = True) -> pd.Series:
+    """Get a pandas Series with the number of unique barcode molecules found per
+    cell. molecules_dataframe is set to True by default, if a cells DataFrame is
+    being used, then this must be False."""
+    if molecules_dataframe:
+        return df.groupby('#cell_id').clone_id.unique().apply(len)
+    else:
+        return df.groupby(['cell_id']).barcode.unique().apply(len)
+
+
+def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None,
+                            txt=None, ax=None):
     ax = sns.histplot(series, discrete=True, log=True, ax=ax)
 
     ax.set_xlabel(xlabel)
