@@ -124,8 +124,13 @@ def get_unique_barcodes_per_cell(df: pd.DataFrame,
         return df.groupby(['cell_id']).barcode.unique().apply(len)
 
 
-def plot_discrete_histogram(series, title=None, xlabel=None, ylabel=None,
-                            txt=None, ax=None):
+def plot_discrete_histogram(series: pd.Series,
+                            title: str = None,
+                            xlabel: str = None, ylabel: str = None,
+                            txt:str = None,
+                            ax: plt.Axes = None):
+    """plots a discrete histogram with optional title, x and y labels, and added
+     text below."""
     ax = sns.histplot(series, discrete=True, log=True, ax=ax)
 
     ax.set_xlabel(xlabel)
