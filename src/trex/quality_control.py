@@ -78,6 +78,11 @@ def read_quality(reads: pd.DataFrame,
     return ax
 
 
+def get_read_per_molecule(df: pd.DataFrame) -> pd.Series:
+    """Get a pandas Series with the number of reads per molecule."""
+    return df.groupby(['#cell_id', 'umi']).clone_id.agg('count')
+
+
 def get_length_read(df: pd.DataFrame,
                     molecules_dataframe: bool = True) -> pd.Series:
     """Get a pandas Series with the number of nucleotides read per molecule.
@@ -131,6 +136,9 @@ def plot_discrete_histogram(series: pd.Series,
                             ax: plt.Axes = None):
     """plots a discrete histogram with optional title, x and y labels, and added
      text below."""
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
     ax = sns.histplot(series, discrete=True, log=True, ax=ax)
 
     ax.set_xlabel(xlabel)
