@@ -60,6 +60,11 @@ def load_umi_count_matrix(data_dir: pathlib.Path):
     return pd.read_csv(UMI_DIR)
 
 
+def load_clone_ids(data_dir: pathlib.Path):
+    """Loads saved clone id and cell id into a DataFrame."""
+    return pd.read_csv(data_dir / 'clones.txt')
+
+
 def read_quality(reads: pd.DataFrame,
                  ax: plt.Axes = None,
                  add_description: bool = True) -> plt.Axes:
@@ -127,6 +132,16 @@ def get_unique_barcodes_per_cell(df: pd.DataFrame,
         return df.groupby('#cell_id').clone_id.unique().apply(len)
     else:
         return df.groupby(['cell_id']).barcode.unique().apply(len)
+
+
+def get_barcodes_per_clone_dictionary(clones: pd.DataFrame,
+                                      cells_filtered: pd.DataFrame) -> pd.Series:
+    """Get a pandas Series with the unique barcode molecules found in each
+    clone. clones is the clones dataframe from clones.txt and cells_filtered is
+    the dataframe containing barcodes per cell (cells_filtered.txt)."""
+    cells_barcode = cells_filtered.groupby('cell_id').barcode.apply(set)
+    clones['barcodes'] = clones.cell_id.apply(lambda x: cells_barcode[x])
+    return clones.groupby('#clone_id').barcodes.apply(lambda x: set.union(*x))
 
 
 def plot_discrete_histogram(series: pd.Series,
