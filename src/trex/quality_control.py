@@ -134,14 +134,21 @@ def get_unique_barcodes_per_cell(df: pd.DataFrame,
         return df.groupby(['cell_id']).barcode.unique().apply(len)
 
 
-def get_barcodes_per_clone(clones: pd.DataFrame,
-                           cells_filtered: pd.DataFrame) -> pd.Series:
-    """Get a pandas Series with the unique barcode molecules found in each
-    clone. clones is the clones dataframe from clones.txt and cells_filtered is
-    the dataframe containing barcodes per cell (cells_filtered.txt)."""
+def add_barcodes_per_clone(clones: pd.DataFrame,
+                           cells_filtered: pd.DataFrame) -> pd.DataFrame:
+    """Add  the unique barcode molecules found in each clone to the clones
+    DataFrame. clones is the clones dataframe from clones.txt and cells_filtered
+    is the dataframe containing barcodes per cell (cells_filtered.txt)."""
     cells_barcode = cells_filtered.groupby('cell_id').barcode.apply(set)
     clones['barcodes'] = clones.cell_id.apply(lambda x: cells_barcode[x])
-    return clones.groupby('#clone_id').barcodes.apply(lambda x: set.union(*x))
+    return clones
+
+
+def get_barcodes_per_clone(clones: pd.DataFrame) -> pd.Series:
+    """Get a pandas Series with the number of unique barcodes found per
+    clone."""
+    return clones.groupby('#clone_id').barcodes.apply(
+        lambda x: len(set.union(*x)))
 
 
 def get_clone_sizes(clones: pd.DataFrame) -> pd.Series:
