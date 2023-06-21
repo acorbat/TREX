@@ -125,7 +125,7 @@ def make_jaccard_similarity_plots(data_dir: pathlib.Path) -> plt.Figure:
     umi_count = load_umi_count_matrix(data_dir)
     jaccard_matrix = jaccard_similarity_matrix(umi_count)
 
-    fig, axs = plt.subplots(2, 1, figsize=(15, 11),
+    fig, axs = plt.subplots(2, 1, figsize=(11, 15),
                             gridspec_kw={'height_ratios': (1, 3)})
     jaccard_histogram(jaccard_matrix, ax=axs[0])
     plot_jaccard_matrix(jaccard_matrix, ax=axs[1])
