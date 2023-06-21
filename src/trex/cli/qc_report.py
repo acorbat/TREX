@@ -125,7 +125,8 @@ def make_jaccard_similarity_plots(data_dir: pathlib.Path) -> plt.Figure:
     umi_count = load_umi_count_matrix(data_dir)
     jaccard_matrix = jaccard_similarity_matrix(umi_count)
 
-    fig, axs = plt.subplots(2, 1, figsize=(11, 15), height_ratios=(1, 3))
+    fig, axs = plt.subplots(2, 1, figsize=(15, 11),
+                            gridspec_kw={'height_ratios': (1, 3)})
     jaccard_histogram(jaccard_matrix, ax=axs[0])
     plot_jaccard_matrix(jaccard_matrix, ax=axs[1])
     plt.subplots_adjust(bottom=0.3)
@@ -305,7 +306,7 @@ def make_unique_barcodes_per_cell_per_step(molecules: pd.DataFrame,
         for p in quantiles:
             ax.axvline(x=p, color='black', alpha=0.8, ls='--', lw=0.5)
 
-    plt.suptitle('Unique Barcodes Molecules per Cell')
+    plt.suptitle('Unique Barcodes per Cell')
     plt.subplots_adjust(hspace=0.6, bottom=0.2)
 
     return fig
