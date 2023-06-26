@@ -149,7 +149,7 @@ def make_read_length_per_step(molecules: pd.DataFrame,
         this_text = f'There are {len(vals)} molecules. {complete_reads} have ' \
                     f'been \nread completely, which accounts for ' \
                     f'{percentage_complete:.1f}%'
-        plot_discrete_histogram(vals, ax=ax,
+        plot_discrete_histogram(vals, ax=ax, xlabel='Nucleotides Read',
                                 txt=this_text,
                                 title=title)
 
