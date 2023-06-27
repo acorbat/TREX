@@ -3,6 +3,7 @@ import pandas as pd
 from typing import List
 
 from .molecule import Molecule
+from .cell import Cell
 
 
 class NiceFormatter(logging.Formatter):
@@ -43,3 +44,15 @@ def df_2_molecule_list(df: pd.DataFrame) -> List[Molecule]:
     )
 
     return sorted_molecules
+
+
+def df_2_cell_list(df: pd.DataFrame) -> List[Cell]:
+    """Cast pandas DataFrame to list of Cells"""
+    cell_list = []
+    for r, this_cell in df.groupby('cell_id', observed=True):
+        cell_id = r
+        counts = {barcode: counts for barcode, counts in
+                  zip(this_cell.barcode.values, this_cell.counts.values)}
+        cell_list.append(Cell(cell_id=cell_id, counts=counts))
+
+    return cell_list
