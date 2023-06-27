@@ -282,3 +282,15 @@ that identifies the clone and *clone_seq* its nucleotide sequence.
 A [loom file](http://linnarssonlab.org/loompy/).
 
 This file is created only if option `--loom` (or `-l`) is used.
+
+
+# Running Quality Control Report
+
+```shell
+trex qc_report DIRECTORY --plot-jaccard-matrix --plot-hamming-distance
+```
+
+*qc_report* takes as an input the directory (or directories) of trex output.
+Plotting the jaccard similarity matrix between cells, requires some time as jaccard similarity is calculated pairwise amongst all cells.
+This can be activated adding the optional flag `--plot-jaccard-matrix`.
+Hamming distance between all viral barcodes found in the dataset after each step can be plotted by means of the optional flag `--plot-hamming-distance`. 
