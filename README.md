@@ -296,3 +296,24 @@ This can be activated adding the optional flag `--plot-jaccard-matrix`.
 Hamming distance between all viral barcodes found in the dataset after each step can be plotted by means of the optional flag `--plot-hamming-distance`.
 
 This will add a pdf file named *Quality_Report.pdf* describing the quality of the TREX run inside the same folder with the TREX output. 
+
+This report contains:
+
+### Overall results
+
+- Histogram of clone sizes
+- Histogram of how many unique barcodes can pe found in each clone
+- Histogram of how many unique barcodes can be found in each cell
+- *(Optional)* A histogram of the Jaccard similarity values between cells and a matrix of the Jaccard similarity between all cells.
+- Histogram of how many reads each detected viral barcode molecule has.
+
+
+### Per step results
+
+Each of these plots has four subplots corresponding to different steps of the TREX pipeline.
+
+- Histograms of how many nucleotides have been read in each molecule
+- *(Optional)* Histograms of the Hamming distance between all the viral barcodes found
+- Histograms of how many viral barcode molecules have been found in each cell
+- Histograms of how many molecules of each unique barcode have been found in the dataset
+- Histograms of How many unique barcodes per cell have been found
