@@ -293,4 +293,6 @@ trex qc_report DIRECTORY --plot-jaccard-matrix --plot-hamming-distance
 *qc_report* takes as an input the directory (or directories) of trex output.
 Plotting the jaccard similarity matrix between cells, requires some time as jaccard similarity is calculated pairwise amongst all cells.
 This can be activated adding the optional flag `--plot-jaccard-matrix`.
-Hamming distance between all viral barcodes found in the dataset after each step can be plotted by means of the optional flag `--plot-hamming-distance`. 
+Hamming distance between all viral barcodes found in the dataset after each step can be plotted by means of the optional flag `--plot-hamming-distance`.
+
+This will add a pdf file named *Quality_Report.pdf* describing the quality of the TREX run inside the same folder with the TREX output. 
