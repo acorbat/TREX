@@ -87,9 +87,10 @@ def make_reads_per_molecule(reads: pd.DataFrame) -> plt.Figure:
     mean = np.mean(vals)
     quantiles = np.quantile(vals, [0.25, 0.5, 0.75])
 
-    this_txt = f'There are {len(vals)} molecules. On average, they have {mean:.2f}\n' \
-               f'reads, with a median of {quantiles[1]} and interquartile range of \n' \
-               f'{quantiles[0]} - {quantiles[2]}. {sum(vals == 1)} molecules have only a single read.'
+    this_txt = f'There are {len(vals)} viral barcode molecules. On average, \n' \
+               f'they have {mean:.2f} reads, with a median of {quantiles[1]} and \n' \
+               f'interquartile range of {quantiles[0]} - {quantiles[2]}. {sum(vals == 1)} molecules have \n' \
+               f'only a single read.'
 
     fig, ax = plt.subplots(1, 1)
     plot_discrete_histogram(vals, xlabel='Number of reads',
@@ -125,8 +126,8 @@ def make_jaccard_similarity_plots(data_dir: pathlib.Path) -> plt.Figure:
     umi_count = load_umi_count_matrix(data_dir)
     jaccard_matrix = jaccard_similarity_matrix(umi_count)
 
-    fig, axs = plt.subplots(2, 1, figsize=(11, 15),
-                            gridspec_kw={'height_ratios': (1, 3)})
+    fig, axs = plt.subplots(2, 1, figsize=(11, 12),
+                            gridspec_kw={'height_ratios': (1, 5)})
     jaccard_histogram(jaccard_matrix, ax=axs[0])
     plot_jaccard_matrix(jaccard_matrix, ax=axs[1])
     plt.subplots_adjust(bottom=0.3)
@@ -158,7 +159,7 @@ def make_read_length_per_step(molecules: pd.DataFrame,
         vals = get_length_read(this_df, molecules_dataframe=False)
         complete_reads = sum(vals == 30)
         percentage_complete = 100 * complete_reads / len(vals)
-        this_text = f'There are {len(vals)} molecules. {complete_reads} have ' \
+        this_text = f'There are {len(vals)} viral barcode molecules. {complete_reads} have ' \
                     f'been \nread completely, which accounts for ' \
                     f'{percentage_complete:.1f}%'
         plot_discrete_histogram(vals, ax=ax, xlabel='Nucleotides Read',
