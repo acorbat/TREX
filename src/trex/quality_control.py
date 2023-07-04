@@ -314,7 +314,7 @@ def jaccard_similarity_matrix(umi_count: pd.DataFrame) -> npt.ArrayLike:
     Note: columns are cell IDs and first column is disregarded as it usually has
     the index to barcodes"""
     this_cell_ids = umi_count.columns[1:]
-    jaccard_matrix = np.empty([len(this_cell_ids)] * 2)
+    jaccard_matrix = np.zeros([len(this_cell_ids)] * 2)
 
     # Iterator over combinations of cells
     def my_iter(cell_id_list):
@@ -329,6 +329,9 @@ def jaccard_similarity_matrix(umi_count: pd.DataFrame) -> npt.ArrayLike:
 
     for ind, val in map(my_jaccard, my_iter(this_cell_ids)):
         jaccard_matrix[ind[0], ind[1]] = val
+
+    jaccard_matrix = jaccard_matrix + jaccard_matrix.T
+    jaccard_matrix[np.diag_indices_from(jaccard_matrix)] = 1
 
     return jaccard_matrix
 
@@ -352,20 +355,16 @@ def plot_jaccard_matrix(jaccard_matrix: npt.ArrayLike,
     from scipy.sparse import csr_matrix
     from scipy.sparse.csgraph import reverse_cuthill_mckee
 
-    diag_jaccard_matrix = jaccard_matrix.copy()
-    diag_jaccard_matrix = diag_jaccard_matrix + diag_jaccard_matrix.T
-    diag_jaccard_matrix[np.diag_indices_from(diag_jaccard_matrix)] = 1
-
-    graph = csr_matrix(diag_jaccard_matrix)
+    graph = csr_matrix(jaccard_matrix)
     swaps = reverse_cuthill_mckee(graph, symmetric_mode=True)
 
-    diag_jaccard_matrix = diag_jaccard_matrix[swaps]
-    diag_jaccard_matrix = diag_jaccard_matrix[:, swaps]
+    jaccard_matrix = jaccard_matrix[swaps]
+    jaccard_matrix = jaccard_matrix[:, swaps]
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(11, 10))
-    im = ax.imshow(diag_jaccard_matrix, interpolation='none', cmap='Blues',
-                   rasterized=True)
+    im = ax.imshow(jaccard_matrix, interpolation='none', cmap='Blues',
+                   rasterized=True, vmin=0, vmax=1)
 
     ax.set_xticks([])
     ax.set_yticks([])
